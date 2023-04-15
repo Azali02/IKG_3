@@ -1,4 +1,1 @@
-﻿  main.cpp
-C:\Users\Азалия\Desktop\21\Graphics - Lab3\util.h(47,1): warning C4005: INVALID_UNIFORM_LOCATION: изменение макроопределения
-C:\Users\Азалия\Desktop\21\Graphics - Lab3\technique.h(6,1): message : см. предыдущее определение "INVALID_UNIFORM_LOCATION"
-  Graphics - Lab3.vcxproj -> C:\Users\Азалия\Desktop\21\Graphics - Lab3\x64\Debug\SpotLight.exe
+﻿  Graphics - Lab3.vcxproj -> C:\Users\Азалия\Desktop\инж граф\xyita_3\ikg 18 Работа с рассеянным освещением\Graphics - Lab3\x64\Debug\Diffuse lighting.exe

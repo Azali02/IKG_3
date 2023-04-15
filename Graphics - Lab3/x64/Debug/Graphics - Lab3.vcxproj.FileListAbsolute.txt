@@ -1,2 +1,3 @@
-C:\Users\Азалия\Desktop\Graphics---Lab3-SpotLight\Graphics - Lab3\x64\Debug\SpotLight.exe
-C:\Users\Азалия\Desktop\21\Graphics - Lab3\x64\Debug\SpotLight.exe
+C:\Users\Азалия\Desktop\ikg 18\Graphics - Lab3\x64\Debug\Diffuse lighting.exe
+C:\Users\Азалия\Desktop\инж граф\xyita_3\ikg 18\Graphics - Lab3\x64\Debug\Diffuse lighting.exe
+C:\Users\Азалия\Desktop\инж граф\xyita_3\ikg 18 Работа с рассеянным освещением\Graphics - Lab3\x64\Debug\Diffuse lighting.exe

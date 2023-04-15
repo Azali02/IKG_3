@@ -12,7 +12,6 @@
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
 
-// Содержит координаты фигруы, текстуры и нормали для света
 struct Vertex
 {
     Vector3f m_pos; // Координата фигуры
@@ -41,7 +40,7 @@ public:
         m_scale = 0.0f;
         m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
         m_directionalLight.AmbientIntensity = 0.0f;
-        m_directionalLight.DiffuseIntensity = 0.0f;
+        m_directionalLight.DiffuseIntensity = 0.75f;
         m_directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0);
     }
 
@@ -52,18 +51,19 @@ public:
         delete m_pTexture;
     }
 
-    // Инициализация камеры, фигуры, света
     bool Init()
     {
         // Векторы, описывающие камеру по-умолчанию
-        Vector3f Pos(0.0f, 0.0f, 0.0f);
+        Vector3f Pos(0.0f, 0.0f, -3.0f);
         Vector3f Target(0.0f, 0.0f, 1.0f);
         Vector3f Up(0.0, 1.0f, 0.0f);
 
-        m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
+        m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        unsigned int Indices[] = { 0, 2, 1,
-                                   0, 3, 2 };
+        unsigned int Indices[] = { 0, 3, 1,
+                                   1, 3, 2,
+                                   2, 3, 0,
+                                   1, 2, 0 };
 
         CreateVertexBuffer(Indices, ARRAY_SIZE_IN_ELEMENTS(Indices));
         CreateIndexBuffer(Indices, sizeof(Indices));
@@ -94,42 +94,20 @@ public:
         GLUTBackendRun(this);
     }
 
-    // Рендер картинки, так же камера, фигура, свет
     virtual void RenderSceneCB()
     {
         m_pGameCamera->OnRender();
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        m_scale += 0.01f; // Изменяем масштаб для движения
-
-        // Настроивание точки света
-        SpotLight sl[2];
-
-        //прожектор-маяк
-        sl[0].DiffuseIntensity = 15.0f;
-        sl[0].Color = Vector3f(0.0f, 1.0f, 0.7f);
-        sl[0].Position = Vector3f(-0.0f, -1.9f, -0.0f);
-        sl[0].Direction = Vector3f(sinf(m_scale), 0.0f, cosf(m_scale));
-        sl[0].Attenuation.Linear = 0.1f;
-        sl[0].Cutoff = 20.0f;
-
-        //прожектор камеры
-        sl[1].DiffuseIntensity = 5.0f;
-        sl[1].Color = Vector3f(1.0f, 0.0f, 1.0f);
-        sl[1].Position = m_pGameCamera->GetPos();
-        sl[1].Direction = m_pGameCamera->GetTarget();
-        sl[1].Attenuation.Linear = 0.1f;
-        sl[1].Cutoff = 10.0f;
-
-        m_pEffect->SetSpotLights(2, sl);
+        m_scale += 0.1f; // Изменяем масштаб для движения
 
         // Конвейер для камеры
         Pipeline p;
         // Вращение
-        p.Rotate(0.0f, 0.0f, 0.0f);
+        p.Rotate(0.0f, m_scale, 0.0f);
         // Мировая позиция
-        p.WorldPos(0.0f, 0.0f, 1.0f);
+        p.WorldPos(0.0f, 0.0f, 3.0f);
         // Настройка позиции камеры
         p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
         // Настройка перспективы
@@ -140,10 +118,6 @@ public:
         // Устанавливаем матрицу мировых преобразований
         m_pEffect->SetWorldMatrix(WorldTransformation);
         m_pEffect->SetDirectionalLight(m_directionalLight); // Настройка освящения
-        // Настройка отражения
-        m_pEffect->SetEyeWorldPos(m_pGameCamera->GetPos());
-        m_pEffect->SetMatSpecularIntensity(1.0f);
-        m_pEffect->SetMatSpecularPower(32);
 
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
@@ -158,11 +132,7 @@ public:
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)20);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
         m_pTexture->Bind(GL_TEXTURE0);
-
-        //----------------------------------
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        /*glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);*/
-
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
@@ -186,24 +156,21 @@ public:
     // Реагирование на нажатие ввод с клавиши: выход, увеличение освящения, уменьжение освящения
     virtual void KeyboardCB(unsigned char Key, int x, int y)
     {
-        float scaleOfChange = 0.1f;
-
         switch (Key) {
         case 'q':
-        case 27:
             glutLeaveMainLoop();
             break;
         case 'a':
-            m_directionalLight.AmbientIntensity += scaleOfChange;
+            m_directionalLight.AmbientIntensity += 0.05f;
             break;
         case 's':
-            m_directionalLight.AmbientIntensity -= scaleOfChange;
+            m_directionalLight.AmbientIntensity -= 0.05f;
             break;
         case 'z':
-            m_directionalLight.DiffuseIntensity += scaleOfChange;
+            m_directionalLight.DiffuseIntensity += 0.05f;
             break;
         case 'x':
-            m_directionalLight.DiffuseIntensity -= scaleOfChange;
+            m_directionalLight.DiffuseIntensity -= 0.05f;
             break;
         }
     }
@@ -244,15 +211,10 @@ private:
     // Создание буфера вершин
     void CreateVertexBuffer(const unsigned int* pIndices, unsigned int IndexCount)
     {
-        Vertex Vertices[4] = { Vertex(Vector3f(-10.0f, -2.0f, -10.0f), Vector2f(0.0f, 0.0f)),
-                               Vertex(Vector3f(10.0f, -2.0f, -10.0f), Vector2f(1.0f, 0.0f)),
-                               Vertex(Vector3f(10.0f, -2.0f, 10.0f), Vector2f(1.0f, 1.0f)),
-                               Vertex(Vector3f(-10.0f, -2.0f, 10.0f), Vector2f(0.0f, 1.0f)) };
-
-        /*Vertex Vertices[4] = { Vertex(Vector3f(-1.0f, -1.0f, 0.5773f), Vector2f(0.0f, 0.0f)),
+        Vertex Vertices[4] = { Vertex(Vector3f(-1.0f, -1.0f, 0.5773f), Vector2f(0.0f, 0.0f)),
                                Vertex(Vector3f(0.0f, -1.0f, -1.15475), Vector2f(0.5f, 0.0f)),
                                Vertex(Vector3f(1.0f, -1.0f, 0.5773f),  Vector2f(1.0f, 0.0f)),
-                               Vertex(Vector3f(0.0f, 1.0f, 0.0f),      Vector2f(0.5f, 1.0f)) };*/
+                               Vertex(Vector3f(0.0f, 1.0f, 0.0f),      Vector2f(0.5f, 1.0f)) };
 
         unsigned int VertexCount = ARRAY_SIZE_IN_ELEMENTS(Vertices);
 
@@ -282,14 +244,14 @@ private:
     Texture* m_pTexture;
     Camera* m_pGameCamera;
     float m_scale;
-    DirectionalLight m_directionalLight;
+    DirectionLight m_directionalLight;
 };
 
 int main(int argc, char** argv)
 {
     GLUTBackendInit(argc, argv);
 
-    if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, 60, true, "KakTyZz")) {
+    if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, 32, false, "Diffuse lighting")) {
         return 1;
     }
 
